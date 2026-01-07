@@ -1,0 +1,21 @@
+name: Mirror Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Docker Hub image (e.g., nginx:latest)'
+        required: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Pull and push
+        run: |
+          docker pull ${{ github.event.inputs.image }}
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker tag ${{ github.event.inputs.image }} ghcr.io/${{ github.repository }}/${{ github.event.inputs.image }}
+          docker push ghcr.io/${{ github.repository }}/${{ github.event.inputs.image }}
